@@ -167,8 +167,8 @@ LEFT JOIN ""Payee"" pt ON t.""TransactionTo"" = pt.""PayeeId""
 LEFT JOIN ""PayeeType"" ptt ON pt.""PayeeType"" = ptt.""PayeeTypeId""
 
 WHERE 
-    t.""TransactionFrom"" = @AccountId
-    OR t.""TransactionTo"" = @AccountId AND t.""CreatedOn"" BETWEEN @FromDate AND @Todate
+    (t.""TransactionFrom"" = @AccountId OR t.""TransactionTo"" = @AccountId)
+    AND t.""CreatedOn"" BETWEEN @StartDate AND @EndDate
 
 ORDER BY 
     t.""CreatedOn"" DESC
@@ -253,6 +253,19 @@ LIMIT 20;
         @ContactId,
         @RoleId,
         @MemberId
+    )
+    RETURNING ""ContactRoleJnId""
+";
+
+        public string insertCustomerRoleJnSql = @"
+    INSERT INTO ""ContactRoleJn"" (
+        ""ContactId"",
+        ""RoleId""
+        
+    )
+    VALUES (
+        @ContactId,
+        @RoleId
     )
     RETURNING ""ContactRoleJnId""
 ";
@@ -462,5 +475,49 @@ COMMIT;
             @ContactId
         )
         RETURNING ""PayeeId"";";
+    }
+
+    public class Customer
+    {
+        public string insertCustomerQuery = @"
+        INSERT INTO public.""Contact"" (
+            ""First Name"",
+            ""Last Name"",
+            ""Password"",
+            ""UserName"",
+            ""Email"",
+            ""MobileNumber"",
+            ""CreatedBy"",
+            ""CardNumber""
+        )
+        VALUES (
+            @FirstName,
+            @LastName,
+            @Password,
+            @UserName,
+            @Email,
+            @MobileNumber,
+            @CreatedBy,
+            @CardNumber
+        )
+        RETURNING ""ContactId""
+;";
+
+        public string GetCustomer = @"
+        SELECT 
+            c.""ContactId"",
+            c.""First Name"" AS ""FirstName"",
+            c.""Last Name"" AS ""LastName"",
+            c.""UserName"",
+            c.""Email"",
+            c.""MobileNumber"",
+            c.""CardNumber""
+        FROM 
+            ""Contact"" c
+        INNER JOIN 
+            ""ContactRoleJn"" crj ON c.""ContactId"" = crj.""ContactId""
+        WHERE 
+            crj.""RoleId"" = @RoleId;
+    ";
     }
 }
