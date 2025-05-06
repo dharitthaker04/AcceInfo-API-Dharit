@@ -132,7 +132,7 @@ namespace AcceInfoAPI.Controllers
         [HttpPost("auth/otp-verify")]
         public async Task<IActionResult> VerifyOtp([FromBody] Common.Models.Request.OtpRequest otpRequest)
         {
-            if (otpRequest.otp == "123456")
+            if (otpRequest.otp == "937577")
             {
                 var contactId = _httpContextAccessor.HttpContext?.User?.FindFirst("contactId")?.Value;
 

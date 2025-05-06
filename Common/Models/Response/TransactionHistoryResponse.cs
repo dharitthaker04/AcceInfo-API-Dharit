@@ -34,6 +34,9 @@ namespace Common.Models.Response
         public string FromAccountType { get; set; }
         public string TransactionNumber { get; set; }
         public string ToAccountType { get; set; }
+        public string AccountCategoryId { get; set; }
+        public string PayeeName { get; set; }
+
     }
 
 

@@ -125,17 +125,17 @@ SELECT
     acf.""Name"" AS ""TransactionFromAccountCategoryName"",
     
     CASE 
-        WHEN t.""TransactionType"" = 'Bill Transfer' THEN pt.""Payee Name""
+        WHEN t.""TransactionType"" = 'Bill Payment' THEN pt.""Payee Number""
         ELSE at.""AccountNumber""
     END AS ""TransactionToAccountNumber"",
     
     CASE 
-        WHEN t.""TransactionType"" = 'Bill Transfer' THEN pt.""Payee Name""
+        WHEN t.""TransactionType"" = 'Bill Payment' THEN pt.""Payee Name""
         ELSE ct.""First Name"" || ' ' || ct.""Last Name""
     END AS ""TransactionToCustomerName"",
     
     CASE 
-        WHEN t.""TransactionType"" = 'Bill Transfer' THEN ptt.""Name""
+        WHEN t.""TransactionType"" = 'Bill Payment' THEN ptt.""Name""
         ELSE act.""Name""
     END AS ""TransactionToAccountCategoryName"",
     
@@ -168,14 +168,13 @@ LEFT JOIN ""PayeeType"" ptt ON pt.""PayeeType"" = ptt.""PayeeTypeId""
 
 WHERE 
     (t.""TransactionFrom"" = @AccountId OR t.""TransactionTo"" = @AccountId)
-    AND t.""CreatedOn"" BETWEEN @StartDate AND @EndDate
+    AND t.""CreatedOn"" BETWEEN @FromDate AND @ToDate
 
 ORDER BY 
     t.""CreatedOn"" DESC
 
 LIMIT 20;
 ";
-
         public string GetLast20TransactionHistoryByAccountId = @"
 SELECT 
     t.""TransactionId"",
@@ -186,17 +185,17 @@ SELECT
     acf.""Name"" AS ""TransactionFromAccountCategoryName"",
     
     CASE 
-        WHEN t.""TransactionType"" = 'Bill Transfer' THEN pt.""Payee Name""
+        WHEN t.""TransactionType"" = 'Bill Payment' THEN pt.""Payee Number""
         ELSE at.""AccountNumber""
     END AS ""TransactionToAccountNumber"",
     
     CASE 
-        WHEN t.""TransactionType"" = 'Bill Transfer' THEN pt.""Payee Name""
+        WHEN t.""TransactionType"" = 'Bill Payment' THEN pt.""Payee Name""
         ELSE ct.""First Name"" || ' ' || ct.""Last Name""
     END AS ""TransactionToCustomerName"",
     
     CASE 
-        WHEN t.""TransactionType"" = 'Bill Transfer' THEN ptt.""Name""
+        WHEN t.""TransactionType"" = 'Bill Payment' THEN ptt.""Name""
         ELSE act.""Name""
     END AS ""TransactionToAccountCategoryName"",
     

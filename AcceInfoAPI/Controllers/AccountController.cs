@@ -198,32 +198,29 @@ namespace AcceInfoAPI.Controllers
 
                 if (request.StartDate.HasValue && request.EndDate.HasValue)
                 {
-                    // If both StartDate and EndDate provided
                     query = _masterList.GetTransactionHistoryByAccountIdWithDate;
                     parameters = new
                     {
                         AccountId = request.AccountId,
-                        StartDate = request.StartDate.Value,
-                        EndDate = request.EndDate.Value
+                        FromDate = request.StartDate.Value.Date.AddHours(0),
+                        ToDate = request.EndDate.Value.Date.AddHours(23).AddMinutes(59).AddSeconds(59)
                     };
                 }
                 else
                 {
-                    // If no StartDate or EndDate provided
                     query = _masterList.GetLast20TransactionHistoryByAccountId;
                     parameters = new
                     {
                         AccountId = request.AccountId
-
                     };
                 }
 
                 var transactions = (await db.QueryAsync<dynamic>(query, parameters)).ToList();
 
-                var result = transactions.Select(t => {
-                    bool isCredit = (string)t.TransactionTo == request.AccountId;
-
-
+                var result = transactions.Select(t =>
+                {
+                    string transactionType = t.TransactionType ?? string.Empty;
+                    bool isBillTransfer = transactionType == "Bill Payment";
 
                     return new TransactionHistoryResponse
                     {
@@ -234,30 +231,28 @@ namespace AcceInfoAPI.Controllers
                         CreatedOn = t.CreatedOn,
                         Amount = t.Amount,
                         Note = t.Note ?? string.Empty,
-                        TransactionType = t.TransactionType ?? string.Empty,
+                        TransactionType = transactionType,
                         IsSelfTransfer = t.IsSelfTransfer,
                         isCredit = t.TransactionFrom == request.AccountId ? false : true,
 
                         FromAccountNumber = t.TransactionFromAccountNumber ?? string.Empty,
-
-                        ToAccountNumber = t.TransactionType == "Bill Payment"
-        ? (t.PayeeNumber ?? string.Empty)
-        : (t.TransactionToAccountNumber ?? string.Empty),
+                        ToAccountNumber = isBillTransfer
+                            ? (t.PayeeNumber ?? string.Empty)
+                            : (t.TransactionToAccountNumber ?? string.Empty),
 
                         TransactionFromCustomerName = t.TransactionFromCustomerName ?? string.Empty,
                         TransactionToCustomerName = t.TransactionType == "Bill Payment"
-        ? (t.PayeeName ?? string.Empty)
-        : (t.TransactionToCustomerName ?? string.Empty),
+                            ? (t.PayeeName ?? string.Empty)
+                            : (t.TransactionToCustomerName ?? string.Empty),
 
                         FromAccountType = t.TransactionFromAccountCategoryName ?? string.Empty,
-                        ToAccountType = t.TransactionType == "Bill Payment"
-        ? (t.PayeeTypeName ?? string.Empty)
-        : (t.TransactionToAccountCategoryName ?? string.Empty)
+                        ToAccountType = isBillTransfer
+                            ? (t.PayeeTypeName ?? string.Empty)
+                            : (t.TransactionToAccountCategoryName ?? string.Empty)
                     };
                 }).ToList();
 
-
-                if(result ==  null || result.Count == 0)
+                if (result == null || result.Count == 0)
                 {
                     return Ok(new Common.Models.ResponseModel
                     {
@@ -265,6 +260,7 @@ namespace AcceInfoAPI.Controllers
                         Message = Constants.DATA_NOT_FOUND
                     });
                 }
+
                 return Ok(new
                 {
                     Status = Constants.SUCCESS_STATUS,
@@ -281,6 +277,7 @@ namespace AcceInfoAPI.Controllers
                 });
             }
         }
+
         [Authorize]
         [HttpPost("transfer-money")]
         public async Task<IActionResult> GetTransferMoney([FromBody] TransferRequest request)
